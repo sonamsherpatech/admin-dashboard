@@ -20,4 +20,8 @@ sequelize
     console.log(error);
   });
 
+sequelize.sync({ alter: false }).then(() => {
+  console.log("Migration Sucessfull");
+});
+
 export default sequelize;
