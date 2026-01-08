@@ -19,6 +19,9 @@ const envConfig = {
   databasePassword: getEnv("DATABASE_PASSWORD"),
   databaseHost: getEnv("DATABASE_HOST"),
   databasePort: getEnv("DATABASE_PORT"),
+
+  //JSONWEBTOKEN
+  jwtSecretKey: getEnv("JWT_SECRET_KEY"),
 };
 
 export default envConfig;
