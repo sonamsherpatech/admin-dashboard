@@ -15,6 +15,14 @@ router
 
 router
   .route("/users/me")
-  .get(AuthMiddleware.authenticate, UserController.getProfile);
+  .get(AuthMiddleware.authenticate, UserController.getProfile)
+  .put(AuthMiddleware.authenticate, UserController.updateMyProfile);
 
+router
+  .route("/users/:id")
+  .delete(
+    AuthMiddleware.authenticate,
+    AdminMiddleware.requireAdmin,
+    UserController.deleteUser
+  );
 export default router;

@@ -4,6 +4,7 @@ import User from "../../../database/model/user-model";
 import Admin from "../../../database/model/admin-model";
 import jwt from "jsonwebtoken";
 import envConfig from "../../../config/config";
+import { UniqueConstraintError } from "sequelize";
 
 class AuthController {
   static async registerUser(req: Request, res: Response) {
@@ -39,6 +40,11 @@ class AuthController {
         message: "User Created Sucessfully",
       });
     } catch (error) {
+      if (error instanceof UniqueConstraintError) {
+        return res.status(409).json({
+          message: "Email already exists",
+        });
+      }
       console.log(error);
       return res.status(500).json({
         message: "Registration Failed",
