@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { IUserData, IUserInitialState } from "./auth-slice-types";
 import { Status } from "@/lib/types/status";
+import { loginUser } from "./auth-thunks";
 
 const initialState: IUserInitialState = {
   user: {
@@ -24,7 +25,23 @@ const authSlice = createSlice({
       state.error = action.payload;
     },
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(loginUser.pending, (state) => {
+        state.status = Status.LOADING;
+        state.error = null;
+      })
+      .addCase(loginUser.fulfilled, (state, action) => {
+        state.status = Status.SUCCESS;
+        state.user = action.payload.user;
+        state.error = null;
+      })
+      .addCase(loginUser.rejected, (state, action) => {
+        state.status = Status.ERROR;
+        state.error = action.payload || "Login Failed";
+      });
+  },
 });
 
 export const { setUser, setError, setStatus } = authSlice.actions;
-export default authSlice;
+export default authSlice.reducer;

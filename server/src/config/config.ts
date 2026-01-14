@@ -22,6 +22,9 @@ const envConfig = {
 
   //JSONWEBTOKEN
   jwtSecretKey: getEnv("JWT_SECRET_KEY"),
+
+  //frontend url
+  frontendURL: getEnv("FRONTEND_URL"),
 };
 
 export default envConfig;

@@ -1,71 +1,72 @@
 "use client";
 import { Eye, EyeClosed } from "lucide-react";
 import Image from "next/image";
-import { ChangeEvent, FormEvent, useState } from "react";
-import { ILoginType } from "./login-type";
+import { useState } from "react";
 import loginSchema from "./login-validation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
+import { loginUser } from "@/lib/store/auth/auth-thunks";
+import { toast } from "sonner";
+
+type LoginFormType = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const [seePassword, setSeePassword] = useState<boolean>(false);
-  const [loginData, setLoginData] = useState<ILoginType>({
-    email: "",
-    password: "",
+  const dispatch = useAppDispatch();
+  const { status, error } = useAppSelector((store) => store.auth);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormType>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
   });
-  const [loginError, setLoginError] = useState<Record<string, any>>({});
 
   function handlePasswordSee() {
+    if (isSubmitting) return;
     setSeePassword(!seePassword);
   }
 
-  function handleLoginDataChange(e: ChangeEvent<HTMLInputElement>) {
-    const { name, value } = e.target;
-    setLoginData({
-      ...loginData,
-      [name]: value,
-    });
-
-    if (loginError[name]) {
-      setLoginError((prev) => {
-        const updated = { ...prev };
-        delete updated[name];
-        return updated;
-      });
-    }
-  }
-
-  function handleLoginDataSubmission(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const result = loginSchema.safeParse(loginData);
-    if (!result.success) {
-      setLoginError(result.error.format());
-    } else {
-      setLoginError({});
+  async function onSubmit(data: LoginFormType) {
+    const result = await dispatch(loginUser(data));
+    if (loginUser.fulfilled.match(result)) {
+      toast.success("Logged in sucessfully 🎉");
+      reset();
     }
 
-    console.log("Valid login data: ", loginData);
+    if (loginUser.rejected.match(result)) {
+      toast.error(result.payload as string);
+    }
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-sm">
         <h3 className="text-2xl font-bold mb-6 text-center">Login</h3>
-        <form className="space-y-6" onSubmit={handleLoginDataSubmission}>
+        <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
           <div>
             <input
+              disabled={isSubmitting}
               className={`border rounded-md px-4 py-2 w-full focus:outline-none focus:ring-1  transition ${
-                loginError.email
+                errors.email
                   ? "border-red-500 focus:ring-red-200"
                   : "border-gray-300 focus:border-blue-500 focus:ring-blue-200"
               }`}
+              {...register("email")}
               type="email"
               placeholder="Enter e-mail"
-              name="email"
-              value={loginData.email}
-              onChange={handleLoginDataChange}
             />
-            {loginError.email && (
+            {errors.email && (
               <span className="text-xs text-red-600">
-                {loginError.email._errors[0]}
+                {errors.email.message}
               </span>
             )}
           </div>
@@ -85,33 +86,38 @@ export default function LoginPage() {
             )}
 
             <input
+              disabled={isSubmitting}
               className={`border rounded-md px-4 py-2 w-full focus:outline-none  focus:ring-1 transition ${
-                loginError.password
+                errors.password
                   ? "border-red-500 focus:ring-red-200"
                   : "border-gray-300 focus:border-blue-500 focus:ring-blue-200"
               }`}
+              {...register("password")}
               type={seePassword ? "text" : "password"}
               placeholder="Enter password"
-              name="password"
-              value={loginData.password}
-              onChange={handleLoginDataChange}
             />
-            {loginError.password && (
+            {errors.password && (
               <span className="text-xs text-red-600">
-                {loginError.password._errors[0]}
+                {errors.password.message}
               </span>
             )}
           </div>
           <div className="flex justify-center">
             <button
-              className="w-full px-6 py-2 rounded-md bg-black text-white hover:bg-gray-900 cursor-pointer transition-colors duration-200 font-medium"
+              disabled={isSubmitting}
+              className={`w-full px-6 py-2 rounded-md font-medium transition  ${
+                isSubmitting
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-black text-white hover:bg-gray-900 cursor-pointer"
+              } `}
               type="submit"
             >
-              Login
+              {isSubmitting ? "Logging in ... " : "Login"}
             </button>
           </div>
           <div>
             <button
+              disabled={isSubmitting}
               className="flex items-center justify-center gap-2 w-full bg-gray-100 px-5 py-2 rounded-md hover:bg-gray-200 cursor-pointer transition-colors duration-200 font-medium"
               type="button"
             >
