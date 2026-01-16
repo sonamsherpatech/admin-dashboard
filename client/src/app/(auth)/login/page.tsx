@@ -1,7 +1,7 @@
 "use client";
 import { Eye, EyeClosed } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import loginSchema from "./login-validation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,6 +9,8 @@ import { z } from "zod";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import { loginUser } from "@/lib/store/auth/auth-thunks";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import Button from "@/components/ui/Button";
 
 type LoginFormType = z.infer<typeof loginSchema>;
 
@@ -16,7 +18,9 @@ export default function LoginPage() {
   const [seePassword, setSeePassword] = useState<boolean>(false);
   const dispatch = useAppDispatch();
   const { status, error } = useAppSelector((store) => store.auth);
+  const router = useRouter();
 
+  const [checkingAuth, setCheckingAuth] = useState<boolean>(true);
   const {
     register,
     handleSubmit,
@@ -30,6 +34,15 @@ export default function LoginPage() {
     },
   });
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      router.replace("/dashboard");
+    } else {
+      setCheckingAuth(false);
+    }
+  }, [router]);
+
   function handlePasswordSee() {
     if (isSubmitting) return;
     setSeePassword(!seePassword);
@@ -40,12 +53,15 @@ export default function LoginPage() {
     if (loginUser.fulfilled.match(result)) {
       toast.success("Logged in sucessfully 🎉");
       reset();
+      router.push("/dashboard");
     }
 
     if (loginUser.rejected.match(result)) {
       toast.error(result.payload as string);
     }
   }
+
+  if (checkingAuth) return null;
 
   return (
     <div className="min-h-screen flex items-center justify-center">
@@ -103,17 +119,11 @@ export default function LoginPage() {
             )}
           </div>
           <div className="flex justify-center">
-            <button
-              disabled={isSubmitting}
-              className={`w-full px-6 py-2 rounded-md font-medium transition  ${
-                isSubmitting
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-black text-white hover:bg-gray-900 cursor-pointer"
-              } `}
+            <Button
               type="submit"
-            >
-              {isSubmitting ? "Logging in ... " : "Login"}
-            </button>
+              disabled={isSubmitting}
+              text={isSubmitting ? "Loggin in..." : "Login"}
+            />
           </div>
           <div>
             <button

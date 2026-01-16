@@ -1,6 +1,5 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { IUserData } from "./auth-slice-types";
-import axios from "axios";
 import axiosInstance from "@/lib/axios/axios";
 
 interface LoginPayload {
@@ -31,3 +30,5 @@ export const loginUser = createAsyncThunk<
     return thunkAPI.rejectWithValue(message);
   }
 });
+
+
