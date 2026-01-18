@@ -11,6 +11,7 @@ import { loginUser } from "@/lib/store/auth/auth-thunks";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Button from "@/components/ui/Button";
+import { useRedirectIfAuthenticated } from "@/lib/hooks/useRedirectIfAuthenticated";
 
 type LoginFormType = z.infer<typeof loginSchema>;
 
@@ -18,9 +19,9 @@ export default function LoginPage() {
   const [seePassword, setSeePassword] = useState<boolean>(false);
   const dispatch = useAppDispatch();
   const { status, error } = useAppSelector((store) => store.auth);
-  const router = useRouter();
 
-  const [checkingAuth, setCheckingAuth] = useState<boolean>(true);
+  const router = useRouter();
+  const checkingAuth = useRedirectIfAuthenticated();
   const {
     register,
     handleSubmit,
@@ -33,15 +34,6 @@ export default function LoginPage() {
       password: "",
     },
   });
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      router.replace("/dashboard");
-    } else {
-      setCheckingAuth(false);
-    }
-  }, [router]);
 
   function handlePasswordSee() {
     if (isSubmitting) return;

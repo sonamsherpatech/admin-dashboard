@@ -2,7 +2,7 @@
 
 import Button from "@/components/ui/Button";
 import { Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -11,6 +11,7 @@ import { useAppDispatch } from "@/lib/store/hooks";
 import { useRouter } from "next/navigation";
 import { registerUser } from "@/lib/store/auth/auth-thunks";
 import { toast } from "sonner";
+import { useRedirectIfAuthenticated } from "@/lib/hooks/useRedirectIfAuthenticated";
 
 type RegisterFormType = z.infer<typeof registerSchema>;
 
@@ -20,7 +21,7 @@ export default function RegisterUser() {
 
   const dispatch = useAppDispatch();
   const router = useRouter();
-
+  const checkingAuth = useRedirectIfAuthenticated();
   const {
     register,
     handleSubmit,
@@ -47,7 +48,8 @@ export default function RegisterUser() {
   }
 
   async function onSubmit(data: RegisterFormType) {
-    const result = await dispatch(registerUser(data));
+    const { confirmPassword, ...payload } = data;
+    const result = await dispatch(registerUser(payload));
 
     if (registerUser.fulfilled.match(result)) {
       toast.success("Register Sucessfull 🎉");
@@ -60,6 +62,7 @@ export default function RegisterUser() {
     }
   }
 
+  if (checkingAuth) return <div className="min-h-screen"></div>;
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="w-full max-w-sm bg-white rounded-lg shadow-md p-6">
