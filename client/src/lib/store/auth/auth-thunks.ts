@@ -1,16 +1,10 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { IUserData } from "./auth-slice-types";
 import axiosInstance from "@/lib/axios/axios";
-
-interface LoginPayload {
-  email: string;
-  password: string;
-}
-
-interface LoginResponse {
-  user: IUserData;
-  token: string;
-}
+import {
+  LoginPayload,
+  LoginResponse,
+  RegisterPayload,
+} from "./auth-thunk-types";
 
 export const loginUser = createAsyncThunk<
   LoginResponse,
@@ -31,4 +25,16 @@ export const loginUser = createAsyncThunk<
   }
 });
 
-
+export const registerUser = createAsyncThunk<
+  "string",
+  RegisterPayload,
+  { rejectValue: string }
+>("/auth/registerUser", async (data, thunkAPI) => {
+  try {
+    const response = await axiosInstance.post("/auth/register", data);
+    return response.data.message;
+  } catch (error: any) {
+    const message = error.response?.data?.message || "Registration failed";
+    return thunkAPI.rejectWithValue(message);
+  }
+});

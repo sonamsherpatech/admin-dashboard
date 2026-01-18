@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { IUserData, IUserInitialState } from "./auth-slice-types";
 import { Status } from "@/lib/types/status";
-import { loginUser } from "./auth-thunks";
+import { loginUser, registerUser } from "./auth-thunks";
 
 const initialState: IUserInitialState = {
   user: {
@@ -44,6 +44,17 @@ const authSlice = createSlice({
       .addCase(loginUser.rejected, (state, action) => {
         state.status = Status.ERROR;
         state.error = action.payload || "Login Failed";
+      })
+      .addCase(registerUser.pending, (state) => {
+        state.status = Status.LOADING;
+        state.error = null;
+      })
+      .addCase(registerUser.fulfilled, (state) => {
+        state.status = Status.SUCCESS;
+      })
+      .addCase(registerUser.rejected, (state, action) => {
+        state.status = Status.ERROR;
+        state.error = action.payload ?? "Registration failed";
       });
   },
 });
