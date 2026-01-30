@@ -5,6 +5,7 @@ import {
   LoginResponse,
   RegisterPayload,
 } from "./auth-thunk-types";
+import { logout } from "./auth-slice";
 
 export const loginUser = createAsyncThunk<
   LoginResponse,
@@ -38,3 +39,11 @@ export const registerUser = createAsyncThunk<
     return thunkAPI.rejectWithValue(message);
   }
 });
+
+export const logoutUser = createAsyncThunk(
+  "/auth/logout",
+  async (_, { dispatch }) => {
+    localStorage.removeItem("token");
+    dispatch(logout());
+  },
+);

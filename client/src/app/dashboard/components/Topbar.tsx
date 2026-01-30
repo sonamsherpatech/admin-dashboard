@@ -1,14 +1,20 @@
 "use client";
-import { ChevronDown, LogOut, Settings, User } from "lucide-react";
+import { logoutUser } from "@/lib/store/auth/auth-thunks";
+import { useAppDispatch } from "@/lib/store/hooks";
+import { ChevronDown, ChevronUp, LogOut, Settings, User } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 export default function Topbar() {
   const [open, setOpen] = useState<boolean>(false);
+  const dispatch = useAppDispatch();
+  const router = useRouter();
 
   const dropDownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
+      console.log(dropDownRef, e.target);
       if (
         dropDownRef.current &&
         !dropDownRef.current.contains(e.target as Node)
@@ -24,6 +30,11 @@ export default function Topbar() {
     };
   }, []);
 
+  function handleLogout() {
+    dispatch(logoutUser());
+    router.replace("/login");
+  }
+
   return (
     <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6">
       {/* Left: Title Page */}
@@ -32,7 +43,7 @@ export default function Topbar() {
       {/* Right: Profile */}
       <div className="relative" ref={dropDownRef}>
         <button
-          className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 transition"
+          className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 transition cursor-pointer"
           onClick={() => setOpen((prev) => !prev)}
         >
           <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-sm font-semibold">
@@ -41,7 +52,7 @@ export default function Topbar() {
 
           <span className="text-sm font-medium text-gray-700">Admin</span>
 
-          <ChevronDown size={16} className="cursor-pointer" />
+          {open ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </button>
 
         {/* Dropdown */}
@@ -59,7 +70,10 @@ export default function Topbar() {
 
             <div className="border-t border-gray-200" />
 
-            <button className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100 cursor-pointer">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100 cursor-pointer"
+            >
               <LogOut size={16} />
               Logout
             </button>
